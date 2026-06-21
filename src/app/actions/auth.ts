@@ -10,8 +10,8 @@ export async function verifyPasscode(code: string): Promise<{ success: boolean; 
     const cookieStore = await cookies()
     cookieStore.set("jg_session", "70861GA_verified", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false, // Changed to false to allow session cookie storage on plain HTTP deployments (e.g. http://<server-ip>:3110)
+      sameSite: "lax", // Changed from strict to lax for better cross-navigation compatibility
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: "/"
     })
