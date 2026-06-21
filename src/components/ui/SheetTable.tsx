@@ -758,8 +758,8 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
           return (
             <div className="sticky-bar-content">
               <div className="sticky-bar-left">
-                <span className="sticky-logo" style={{ color: "#ffffff", background: "none", WebkitTextFillColor: "#ffffff" }}>
-                  <PhoneIcon style={{ width: "16px", height: "16px", stroke: "#ffffff" }} />
+                <span className="sticky-logo" style={{ color: "var(--text-primary)", WebkitTextFillColor: "var(--text-primary)", background: "none" }}>
+                  <PhoneIcon style={{ width: "16px", height: "16px", stroke: "var(--text-primary)" }} />
                   Quick Call
                 </span>
               </div>
@@ -850,6 +850,7 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                         "--active-color": "#ef4444",
                         "--tab-bg-gradient": "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",
                         "--tab-shadow": "rgba(239, 68, 68, 0.4)",
+                        color: "#ffffff",
                         height: "38px",
                         borderRadius: "10px",
                         padding: "0 20px",
@@ -882,6 +883,7 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                         "--active-color": sheetTheme.activeColor,
                         "--tab-bg-gradient": sheetTheme.bgGradient,
                         "--tab-shadow": sheetTheme.shadow,
+                        color: "#ffffff",
                         height: "38px",
                         borderRadius: "10px",
                         padding: "0 20px",
