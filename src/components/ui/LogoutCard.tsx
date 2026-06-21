@@ -3,11 +3,35 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { logout } from "@/app/actions/auth"
-import { LogOutIcon, ShieldCheckIcon } from "lucide-react"
+import { LogOutIcon, ShieldCheckIcon, SunIcon, MoonIcon } from "lucide-react"
 
 export default function LogoutCard() {
   const router = useRouter()
   const [loading, setLoading] = React.useState(false)
+  const [theme, setTheme] = React.useState<"dark" | "light">("dark")
+
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "dark" | "light" | null
+    if (savedTheme) {
+      requestAnimationFrame(() => {
+        setTheme(savedTheme)
+      })
+      if (savedTheme === "light") {
+        document.documentElement.classList.add("light-mode")
+      }
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark"
+    setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
+    if (newTheme === "light") {
+      document.documentElement.classList.add("light-mode")
+    } else {
+      document.documentElement.classList.remove("light-mode")
+    }
+  }
 
   const handleLogout = async () => {
     if (loading) return
@@ -46,6 +70,33 @@ export default function LogoutCard() {
           Pincode authorized
         </p>
       </div>
+      
+      <button
+        onClick={toggleTheme}
+        className="theme-toggle-btn"
+        title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "36px",
+          height: "36px",
+          borderRadius: "8px",
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid var(--border-color)",
+          color: "var(--text-primary)",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          zIndex: 1
+        }}
+      >
+        {theme === "dark" ? (
+          <SunIcon style={{ width: "16px", height: "16px" }} />
+        ) : (
+          <MoonIcon style={{ width: "16px", height: "16px" }} />
+        )}
+      </button>
+
       <button
         onClick={handleLogout}
         disabled={loading}
