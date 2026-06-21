@@ -59,9 +59,10 @@ interface SheetTableProps {
   initialSheetName: string
   gids?: Record<string, number>
   initialRequestCount: number
+  spreadsheetId?: string
 }
 
-export default function SheetTable({ initialRows, sheetsList, initialSheetName, gids, initialRequestCount }: SheetTableProps) {
+export default function SheetTable({ initialRows, sheetsList, initialSheetName, gids, initialRequestCount, spreadsheetId }: SheetTableProps) {
   const [rows, setRows] = React.useState<string[][]>(initialRows)
   const cols = React.useMemo(() => {
     const headerRow = rows[1] || rows[0] || []
@@ -1164,9 +1165,9 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                             return values.length > 0 ? values[0] : 0;
                           };
                           const gid = getGid(sheetName);
-                          const spreadsheetId = process.env.NEXT_PUBLIC_SPREADSHEET_ID;
+                          const finalSpreadsheetId = spreadsheetId || process.env.NEXT_PUBLIC_SPREADSHEET_ID;
                           const companyColLetter = getColumnLetter(cols.companyName)
-                          const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${gid}&range=${companyColLetter}${sheetRowNumber}`;
+                          const url = `https://docs.google.com/spreadsheets/d/${finalSpreadsheetId}/edit#gid=${gid}&range=${companyColLetter}${sheetRowNumber}`;
 
                           return url ? (
                             <a
@@ -1301,9 +1302,9 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                                     return values.length > 0 ? values[0] : 0;
                                   };
                                   const gid = getGid(sheetName);
-                                  const spreadsheetId = process.env.NEXT_PUBLIC_SPREADSHEET_ID;
+                                  const finalSpreadsheetId = spreadsheetId || process.env.NEXT_PUBLIC_SPREADSHEET_ID;
                                   const url = colLetter
-                                    ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${gid}&range=${colLetter}${sheetRowNumber}`
+                                    ? `https://docs.google.com/spreadsheets/d/${finalSpreadsheetId}/edit#gid=${gid}&range=${colLetter}${sheetRowNumber}`
                                     : undefined;
 
                                   return (

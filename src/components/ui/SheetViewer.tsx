@@ -70,6 +70,7 @@ export default async function SheetViewer({ listResult, dataResult }: SheetViewe
   const sheetsList = ["All", ...(listResultVal.sheets || [])]
   const initialRows = dataResultVal.data || []
   const initialSheetName = dataResultVal.activeSheet || "All"
+  const spreadsheetId = process.env.NEXT_PUBLIC_SPREADSHEET_ID || ""
 
   return (
     <div className="sheet-viewer-container">
@@ -79,6 +80,7 @@ export default async function SheetViewer({ listResult, dataResult }: SheetViewe
         initialSheetName={initialSheetName}
         gids={listResultVal.gids}
         initialRequestCount={dataResultVal.requestCount || 0}
+        spreadsheetId={spreadsheetId}
       />
     </div>
   )
