@@ -1,65 +1,139 @@
-import Image from "next/image";
+import QuickCallWidget from "@/components/ui/QuickCallWidget";
+import SheetViewer from "@/components/ui/SheetViewer";
+import { getSheetData, getSpreadsheetSheets, getColumnIndices, getCombinedHeader, getScriptData } from "@/app/actions/sheets";
+import { BriefcaseIcon, CheckIcon, PhoneIcon, ExternalLinkIcon } from "lucide-react";
+import ColdCallScript from "@/components/ui/ColdCallScript";
+import LogoutCard from "@/components/ui/LogoutCard";
 
-export default function Home() {
+export const dynamic = "force-dynamic"
+
+export default async function Home() {
+  // Preload all data on the server in parallel
+  const [listResult, dataResult, teamResult, scriptResult] = await Promise.all([
+    getSpreadsheetSheets(),
+    getSheetData("All"),
+    getSheetData("team"),
+    getScriptData()
+  ])
+
+  // Extract sheets list
+  const initialSheets = (listResult.sheets || []).filter(
+    (s: string) => s !== "All" && s !== "Duplicates"
+  )
+  const initialAllRows = dataResult.data || []
+
+  // Extract and map team members
+  const initialTeams: Record<string, string[]> = {}
+  if (teamResult.success && teamResult.data) {
+    const teamRows = teamResult.data.slice(2)
+    let currentTeam = ""
+    teamRows.forEach(row => {
+      if (row[0] && row[0].trim() !== "") {
+        currentTeam = row[0].trim()
+      }
+      if (row[1] && row[1].trim() !== "") {
+        if (!initialTeams[currentTeam]) {
+          initialTeams[currentTeam] = []
+        }
+        initialTeams[currentTeam].push(row[1].trim())
+      }
+    })
+  }
+
+  // Calculate statistics from sheet data
+  const combinedHeader = getCombinedHeader(initialAllRows)
+  const cols = getColumnIndices(combinedHeader)
+  const dataRows = initialAllRows.slice(2)
+
+  const totalLeads = dataRows.filter(row => row && row[cols.companyName]).length
+  
+  const completedLeads = dataRows.filter(row => {
+    const status = row[cols.ingested]?.toLowerCase()?.trim()
+    return status === "complete"
+  }).length
+
+  const calledLeads = dataRows.filter(row => {
+    const status = row[cols.called]?.toLowerCase()?.trim()
+    return status === "yes"
+  }).length
+
+  const onboardedLeads = dataRows.filter(row => {
+    const status = row[cols.acceptOnboard]?.toLowerCase()?.trim()
+    return status === "yes"
+  }).length
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="app-container">
+      {/* Top Header Section: Split into Cards */}
+      <div className="top-grid-container">
+        {/* Left Side: 5 Cards Grid */}
+        <div className="branding-cards-grid">
+          <LogoutCard />
+          {/* Row 1: 2 small cards */}
+          <div className="branding-card-row">
+            <div className="card branding-small-card">
+              <div className="branding-icon-wrapper leads">
+                <BriefcaseIcon className="branding-card-icon" />
+              </div>
+              <div>
+                <h2>{totalLeads}</h2>
+                <p>Total Leads</p>
+              </div>
+            </div>
+            <div className="card branding-small-card">
+              <div className="branding-icon-wrapper completed">
+                <CheckIcon className="branding-card-icon" />
+              </div>
+              <div>
+                <h2>{completedLeads}</h2>
+                <p>Completed</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: 2 small cards */}
+          <div className="branding-card-row">
+            <div className="card branding-small-card">
+              <div className="branding-icon-wrapper called">
+                <PhoneIcon className="branding-card-icon" />
+              </div>
+              <div>
+                <h2>{calledLeads}</h2>
+                <p>Called</p>
+              </div>
+            </div>
+            <div className="card branding-small-card">
+              <div className="branding-icon-wrapper onboarded">
+                <ExternalLinkIcon className="branding-card-icon" />
+              </div>
+              <div>
+                <h2>{onboardedLeads}</h2>
+                <p>Onboarded</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: 1 big card (interactive script) */}
+          <ColdCallScript initialSteps={scriptResult.success ? scriptResult.data : []} />
+        </div>
+
+        {/* Right Card: Quick Call Lookup Widget */}
+        <div className="card interactive-demo-card">
+          <QuickCallWidget 
+            initialSheets={initialSheets}
+            initialAllRows={initialAllRows}
+            initialTeams={initialTeams}
+          />
+        </div>
+      </div>
+
+      {/* Spreadsheet Data Dashboard Section */}
+      <div className="dashboard-container">
+        <SheetViewer 
+          listResult={listResult}
+          dataResult={dataResult}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jg-call-app
+    restart: always
+    ports:
+      - "3110:3110"
+    volumes:
+      - ./.env.local:/app/.env.local:ro
+      - ./credentials.json:/app/credentials.json:ro
