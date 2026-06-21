@@ -247,16 +247,20 @@ async function syncIngestedStatusInSheet(
   if (dataToUpdate.length > 0) {
     try {
       incrementApiCount()
-      await sheets.spreadsheets.values.batchUpdate({
+      // Run the update in the background (asynchronous) without awaiting it
+      sheets.spreadsheets.values.batchUpdate({
         spreadsheetId,
         requestBody: {
           valueInputOption: "RAW",
           data: dataToUpdate
         }
+      }).then(() => {
+        console.log(`Successfully synced ${dataToUpdate.length} ingested status fields to Google Sheets in background for sheet "${sheetName}".`)
+      }).catch(err => {
+        console.error(`Failed batch updating ingested status in background for sheet ${sheetName}:`, err)
       })
-      console.log(`Successfully synced ${dataToUpdate.length} ingested status fields to Google Sheets for sheet "${sheetName}".`)
     } catch (err) {
-      console.error(`Failed batch updating ingested status for sheet ${sheetName}:`, err)
+      console.error(`Failed initiating background update for sheet ${sheetName}:`, err)
     }
   }
 
@@ -323,14 +327,18 @@ export async function getSheetData(sheetName?: string): Promise<SheetDataResult>
     }
 
     if (targetSheet === "All" || targetSheet === "Duplicates") {
-      // Fetch all sheets in parallel
-      const fetchPromises = sheetsList.map(async (name) => {
-        incrementApiCount()
-        const response = await sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: `'${name}'!A1:Z100`,
-        })
-        let rows = response.data.values || []
+      // Fetch all sheets in a single batch request
+      incrementApiCount()
+      const ranges = sheetsList.map(name => `'${name}'!A1:Z100`)
+      const response = await sheets.spreadsheets.values.batchGet({
+        spreadsheetId,
+        ranges,
+      })
+
+      const valueRanges = response.data.valueRanges || []
+      const fetchPromises = sheetsList.map(async (name, index) => {
+        const valRange = valueRanges[index]
+        let rows = valRange?.values || []
         if (rows.length > 0) {
           rows = await syncIngestedStatusInSheet(sheets, spreadsheetId, name, rows)
         }
