@@ -3048,3 +3048,20 @@ p {
   color: #dc2626 !important;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.05) !important;
 }
+
+:root.light-mode .skeleton-bar,
+:root.light-mode .skeleton-cell {
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.08) 0%,
+      rgba(15, 23, 42, 0.16) 50%,
+      rgba(15, 23, 42, 0.08) 100%) !important;
+  background-size: 200% 100% !important;
+}
+
+:root.light-mode .skeleton-tab {
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.07) 0%,
+      rgba(15, 23, 42, 0.14) 50%,
+      rgba(15, 23, 42, 0.07) 100%) !important;
+  background-size: 200% 100% !important;
+}
