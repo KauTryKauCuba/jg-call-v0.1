@@ -3034,3 +3034,17 @@ p {
   background: rgba(168, 85, 247, 0.08);
   color: #7e22ce;
 }
+
+:root.light-mode .btn-choice.active-yes {
+  background: rgba(34, 197, 94, 0.08) !important;
+  border-color: #16a34a !important;
+  color: #16a34a !important;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.05) !important;
+}
+
+:root.light-mode .btn-choice.active-no {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.05) !important;
+}
