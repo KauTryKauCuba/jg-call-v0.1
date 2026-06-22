@@ -1,78 +1,60 @@
-import QuickCallWidget from "@/components/ui/QuickCallWidget";
-import SheetViewer from "@/components/ui/SheetViewer";
-import { getSheetData, getSpreadsheetSheets, getColumnIndices, getCombinedHeader, getScriptData } from "@/app/actions/sheets";
-import { BriefcaseIcon, CheckIcon, PhoneIcon, ExternalLinkIcon } from "lucide-react";
-import Link from "next/link";
-import ColdCallScript from "@/components/ui/ColdCallScript";
-import LogoutCard from "@/components/ui/LogoutCard";
-import { PixelCanvas } from "@/components/ui/pixel-canvas";
+import SheetViewer from "@/components/ui/SheetViewer"
+import { getColumnIndices, getCombinedHeader, type SheetDataResult } from "@/app/actions/sheets"
+import { BriefcaseIcon, CheckIcon, PhoneIcon, ExternalLinkIcon, ArrowLeftIcon } from "lucide-react"
+import Link from "next/link"
+import { PixelCanvas } from "@/components/ui/pixel-canvas"
 
-export const dynamic = "force-dynamic"
-
-export default async function Home() {
-  // Preload all data on the server in parallel
-  const [listResult, dataResult, teamResult, scriptResult] = await Promise.all([
-    getSpreadsheetSheets(),
-    getSheetData("All"),
-    getSheetData("team"),
-    getScriptData()
-  ])
-
-  // Extract sheets list
-  const initialSheets = (listResult.sheets || []).filter(
-    (s: string) => s !== "All" && s !== "Duplicates"
-  )
-  const initialAllRows = dataResult.data || []
-
-  // Extract and map team members
-  const initialTeams: Record<string, string[]> = {}
-  if (teamResult.success && teamResult.data) {
-    const teamRows = teamResult.data.slice(2)
-    let currentTeam = ""
-    teamRows.forEach(row => {
-      if (row[0] && row[0].trim() !== "") {
-        currentTeam = row[0].trim()
-      }
-      if (row[1] && row[1].trim() !== "") {
-        if (!initialTeams[currentTeam]) {
-          initialTeams[currentTeam] = []
-        }
-        initialTeams[currentTeam].push(row[1].trim())
-      }
-    })
+interface LeadsDashboardViewProps {
+  activeFilter: "all" | "completed" | "called" | "onboarded"
+  listResult: {
+    success: boolean
+    sheets?: string[]
+    gids?: Record<string, number>
+    error?: string
   }
+  dataResult: SheetDataResult
+}
 
-  // Calculate statistics from sheet data
+export default function LeadsDashboardView({ activeFilter, listResult, dataResult }: LeadsDashboardViewProps) {
+  const initialAllRows = dataResult.data || []
   const combinedHeader = getCombinedHeader(initialAllRows)
   const cols = getColumnIndices(combinedHeader)
   const dataRows = initialAllRows.slice(2)
 
-  const totalLeads = dataRows.filter(row => row && row[cols.companyName]).length
+  const totalLeads = dataRows.filter((row: string[]) => row && row[cols.companyName]).length
   
-  const completedLeads = dataRows.filter(row => {
+  const completedLeads = dataRows.filter((row: string[]) => {
     const status = row[cols.ingested]?.toLowerCase()?.trim()
     return status === "complete"
   }).length
 
-  const calledLeads = dataRows.filter(row => {
+  const calledLeads = dataRows.filter((row: string[]) => {
     const status = row[cols.called]?.toLowerCase()?.trim()
     return status === "yes"
   }).length
 
-  const onboardedLeads = dataRows.filter(row => {
+  const onboardedLeads = dataRows.filter((row: string[]) => {
     const status = row[cols.acceptOnboard]?.toLowerCase()?.trim()
     return status === "yes"
   }).length
 
   return (
     <div className="app-container">
+      {/* Back to Dashboard Header */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem", gap: "0.75rem" }}>
+        <Link href="/" className="btn-choice" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none", padding: "8px 16px" }}>
+          <ArrowLeftIcon style={{ width: "14px", height: "14px" }} />
+          <span>Back to Dashboard</span>
+        </Link>
+      </div>
+
       {/* Top Header Section: Split into Cards */}
-      <div className="top-grid-container">
-        {/* Left Side: 5 Cards Grid */}
-        <div className="branding-cards-grid">
-          <LogoutCard />
-          {/* Row 1: 2 small cards */}
-          <div className="branding-card-row">
+      <div className="top-grid-container" style={{ gridTemplateColumns: "1fr" }}>
+        {/* Left Side: 5 Cards Grid (stretching full width) */}
+        <div className="branding-cards-grid" style={{ height: "auto" }}>
+          {/* 4 small cards in 1 row */}
+          <div className="branding-card-row" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            {/* Total Leads Card */}
             <Link 
               href="/leads" 
               style={{ 
@@ -83,7 +65,7 @@ export default async function Home() {
               }}
             >
               <div 
-                className="card branding-small-card sheet-tab-btn" 
+                className={`card branding-small-card sheet-tab-btn ${activeFilter === "all" ? "active" : ""}`} 
                 style={{ 
                   width: "100%", 
                   cursor: "pointer",
@@ -100,7 +82,7 @@ export default async function Home() {
                   speed={25}
                   colors={["#f3e8ff", "#c084fc", "#a855f7"]}
                   variant="default"
-                  active={false}
+                  active={activeFilter === "all"}
                   noFocus={true}
                 />
                 <div className="branding-icon-wrapper leads" style={{ position: "relative", zIndex: 10 }}>
@@ -112,6 +94,8 @@ export default async function Home() {
                 </div>
               </div>
             </Link>
+
+            {/* Completed Card */}
             <Link 
               href="/completed" 
               style={{ 
@@ -122,7 +106,7 @@ export default async function Home() {
               }}
             >
               <div 
-                className="card branding-small-card sheet-tab-btn" 
+                className={`card branding-small-card sheet-tab-btn ${activeFilter === "completed" ? "active" : ""}`} 
                 style={{ 
                   width: "100%", 
                   cursor: "pointer",
@@ -139,7 +123,7 @@ export default async function Home() {
                   speed={35}
                   colors={["#dcfce7", "#86efac", "#22c55e"]}
                   variant="default"
-                  active={false}
+                  active={activeFilter === "completed"}
                   noFocus={true}
                 />
                 <div className="branding-icon-wrapper completed" style={{ position: "relative", zIndex: 10 }}>
@@ -151,10 +135,8 @@ export default async function Home() {
                 </div>
               </div>
             </Link>
-          </div>
 
-          {/* Row 2: 2 small cards */}
-          <div className="branding-card-row">
+            {/* Called Card */}
             <Link 
               href="/called" 
               style={{ 
@@ -165,7 +147,7 @@ export default async function Home() {
               }}
             >
               <div 
-                className="card branding-small-card sheet-tab-btn" 
+                className={`card branding-small-card sheet-tab-btn ${activeFilter === "called" ? "active" : ""}`} 
                 style={{ 
                   width: "100%", 
                   cursor: "pointer",
@@ -182,7 +164,7 @@ export default async function Home() {
                   speed={30}
                   colors={["#dbeafe", "#93c5fd", "#3b82f6"]}
                   variant="default"
-                  active={false}
+                  active={activeFilter === "called"}
                   noFocus={true}
                 />
                 <div className="branding-icon-wrapper called" style={{ position: "relative", zIndex: 10 }}>
@@ -194,6 +176,8 @@ export default async function Home() {
                 </div>
               </div>
             </Link>
+
+            {/* Onboarded Card */}
             <Link 
               href="/onboarded" 
               style={{ 
@@ -204,7 +188,7 @@ export default async function Home() {
               }}
             >
               <div 
-                className="card branding-small-card sheet-tab-btn" 
+                className={`card branding-small-card sheet-tab-btn ${activeFilter === "onboarded" ? "active" : ""}`} 
                 style={{ 
                   width: "100%", 
                   cursor: "pointer",
@@ -221,7 +205,7 @@ export default async function Home() {
                   speed={35}
                   colors={["#fef3c7", "#fde047", "#f59e0b"]}
                   variant="default"
-                  active={false}
+                  active={activeFilter === "onboarded"}
                   noFocus={true}
                 />
                 <div className="branding-icon-wrapper onboarded" style={{ position: "relative", zIndex: 10 }}>
@@ -234,18 +218,6 @@ export default async function Home() {
               </div>
             </Link>
           </div>
-
-          {/* Row 3: 1 big card (interactive script) */}
-          <ColdCallScript initialSteps={scriptResult.success ? scriptResult.data : []} />
-        </div>
-
-        {/* Right Card: Quick Call Lookup Widget */}
-        <div className="card interactive-demo-card">
-          <QuickCallWidget 
-            initialSheets={initialSheets}
-            initialAllRows={initialAllRows}
-            initialTeams={initialTeams}
-          />
         </div>
       </div>
 
@@ -254,8 +226,9 @@ export default async function Home() {
         <SheetViewer 
           listResult={listResult}
           dataResult={dataResult}
+          initialFilter={activeFilter}
         />
       </div>
     </div>
-  );
+  )
 }

@@ -3,27 +3,31 @@ import React from "react"
 export default function Loading() {
   return (
     <div className="app-container" style={{ opacity: 0.7, pointerEvents: "none" }}>
+      {/* Back to Dashboard Header Skeleton */}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem" }}>
+        <div style={{ width: "160px", height: "36px", background: "rgba(255,255,255,0.06)", borderRadius: "8px" }} className="pulse" />
+      </div>
+
       {/* Top Header Section Skeleton */}
-      <div className="top-grid-container">
+      <div className="top-grid-container" style={{ gridTemplateColumns: "1fr" }}>
         {/* Left Side Skeleton: 5 Cards Grid */}
         <div className="branding-cards-grid" style={{ height: "auto" }}>
-          {/* Logout/User header skeleton */}
-          <div className="card branding-small-card logout-card" style={{ height: "70px", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: "0 20px" }}>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "12px", flex: 1 }}>
-              {/* Icon Skeleton */}
-              <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} className="pulse" />
-              {/* Text Skeleton */}
-              <div>
-                <div style={{ width: "100px", height: "14px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "4px" }} className="pulse" />
-                <div style={{ width: "110px", height: "10px", background: "rgba(255,255,255,0.04)", borderRadius: "4px" }} className="pulse" />
+          {/* 4 small cards in 1 row skeleton */}
+          <div className="branding-card-row" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            <div className="card branding-small-card">
+              <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.08)" }} className="pulse" />
+              <div style={{ flex: 1, marginLeft: "12px" }}>
+                <div style={{ width: "40px", height: "24px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "6px" }} className="pulse" />
+                <div style={{ width: "80px", height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
               </div>
             </div>
-            {/* Buttons Skeleton */}
-            <div style={{ width: "80px", height: "32px", background: "rgba(255,255,255,0.08)", borderRadius: "6px" }} className="pulse" />
-          </div>
-
-          {/* Row 1: 2 small cards skeleton */}
-          <div className="branding-card-row">
+            <div className="card branding-small-card">
+              <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.08)" }} className="pulse" />
+              <div style={{ flex: 1, marginLeft: "12px" }}>
+                <div style={{ width: "40px", height: "24px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "6px" }} className="pulse" />
+                <div style={{ width: "80px", height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
+              </div>
+            </div>
             <div className="card branding-small-card">
               <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.08)" }} className="pulse" />
               <div style={{ flex: 1, marginLeft: "12px" }}>
@@ -39,41 +43,6 @@ export default function Loading() {
               </div>
             </div>
           </div>
-
-          {/* Row 2: 2 small cards skeleton */}
-          <div className="branding-card-row">
-            <div className="card branding-small-card">
-              <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.08)" }} className="pulse" />
-              <div style={{ flex: 1, marginLeft: "12px" }}>
-                <div style={{ width: "40px", height: "24px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "6px" }} className="pulse" />
-                <div style={{ width: "80px", height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
-              </div>
-            </div>
-            <div className="card branding-small-card">
-              <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "rgba(255,255,255,0.08)" }} className="pulse" />
-              <div style={{ flex: 1, marginLeft: "12px" }}>
-                <div style={{ width: "40px", height: "24px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "6px" }} className="pulse" />
-                <div style={{ width: "80px", height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
-              </div>
-            </div>
-          </div>
-
-          {/* Row 3: script card skeleton */}
-          <div className="card" style={{ height: "160px", padding: "20px" }}>
-            <div style={{ width: "150px", height: "16px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "16px" }} className="pulse" />
-            <div style={{ height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "8px" }} className="pulse" />
-            <div style={{ height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", marginBottom: "8px" }} className="pulse" />
-            <div style={{ width: "80%", height: "12px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
-          </div>
-        </div>
-
-        {/* Right Card: Quick Call Lookup Widget Skeleton */}
-        <div className="card interactive-demo-card" style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "24px" }}>
-          <div style={{ width: "180px", height: "20px", background: "rgba(255,255,255,0.08)", borderRadius: "4px" }} className="pulse" />
-          <div style={{ height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }} className="pulse" />
-          <div style={{ height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }} className="pulse" />
-          <div style={{ height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }} className="pulse" />
-          <div style={{ height: "45px", background: "rgba(255,255,255,0.08)", borderRadius: "8px", marginTop: "auto" }} className="pulse" />
         </div>
       </div>
 

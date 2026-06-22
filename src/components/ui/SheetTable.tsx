@@ -60,9 +60,10 @@ interface SheetTableProps {
   gids?: Record<string, number>
   initialRequestCount: number
   spreadsheetId?: string
+  initialFilter?: string
 }
 
-export default function SheetTable({ initialRows, sheetsList, initialSheetName, gids, initialRequestCount, spreadsheetId }: SheetTableProps) {
+export default function SheetTable({ initialRows, sheetsList, initialSheetName, gids, initialRequestCount, spreadsheetId, initialFilter }: SheetTableProps) {
   const [rows, setRows] = React.useState<string[][]>(initialRows)
   const cols = React.useMemo(() => {
     const headerRow = rows[1] || rows[0] || []
@@ -80,6 +81,14 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
   const [activeTab, setActiveTab] = React.useState<string>(initialSheetName)
   const [loading, setLoading] = React.useState<boolean>(false)
   const [showSkeleton, setShowSkeleton] = React.useState<boolean>(false)
+
+  const [ingestedFilter, setIngestedFilter] = React.useState<"all" | "completed" | "uncompleted" | "called" | "onboarded">(() => {
+    if (initialFilter === "completed") return "completed"
+    if (initialFilter === "uncompleted") return "uncompleted"
+    if (initialFilter === "called") return "called"
+    if (initialFilter === "onboarded") return "onboarded"
+    return "all"
+  })
 
   React.useEffect(() => {
     if (loading) {
@@ -519,7 +528,6 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
   }, [mappedRows, cols.companyName])
 
   const [showDuplicatesOnly, setShowDuplicatesOnly] = React.useState(false)
-  const [ingestedFilter, setIngestedFilter] = React.useState<"all" | "completed" | "uncompleted">("all")
 
   const initialCols = React.useMemo(() => {
     const headerRow = initialRows[1] || initialRows[0] || []
@@ -598,6 +606,15 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
     if (ingestedFilter !== "all") {
       rowsToFilter = rowsToFilter.filter(item => {
         const row = item.data
+
+        if (ingestedFilter === "called") {
+          return row[cols.called]?.toLowerCase()?.trim() === "yes"
+        }
+
+        if (ingestedFilter === "onboarded") {
+          return row[cols.acceptOnboard]?.toLowerCase()?.trim() === "yes"
+        }
+
         const dummyEmail = row[cols.dummyEmail]
         const companyName = row[cols.companyName]
         const jobTitle = row[cols.jobTitle]
@@ -1073,13 +1090,26 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
             <tr>
               <th className="col-num">No.</th>
               <th className="col-job">Source / Company / Job & by</th>
-              <th className="col-meta">Salary & Location</th>
+              {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                <th className="col-meta">Salary & Location</th>
+              )}
               <th className="col-contact">Contact Info</th>
               <th className="col-email">Dummy<br />Email</th>
-              <th className="col-data-collection">Data<br />Collection</th>
+              {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                <th className="col-data-collection">Data<br />Collection</th>
+              )}
               <th className="col-status" style={{ textAlign: "center" }}>Called</th>
               <th className="col-status" style={{ textAlign: "center" }}>Answered</th>
               <th className="col-status" style={{ textAlign: "center" }}>Accepted</th>
+              {(ingestedFilter === "onboarded" || ingestedFilter === "called") && (
+                <>
+                  <th className="col-status" style={{ textAlign: "center" }}>Accept Onboard</th>
+                  <th className="col-email">Company Email</th>
+                </>
+              )}
+              {ingestedFilter === "called" && (
+                <th className="col-reason">Reason Reject</th>
+              )}
               <th className="col-actions">More Details</th>
             </tr>
           </thead>
@@ -1095,24 +1125,37 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                       <div className="skeleton-cell" style={{ width: "100px", height: "12px" }}></div>
                     </div>
                   </td>
-                  <td className="col-meta" style={{ verticalAlign: "middle" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div className="skeleton-cell" style={{ width: "110px", height: "14px" }}></div>
-                      <div className="skeleton-cell" style={{ width: "130px", height: "12px" }}></div>
-                    </div>
-                  </td>
+                  {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                    <td className="col-meta" style={{ verticalAlign: "middle" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <div className="skeleton-cell" style={{ width: "110px", height: "14px" }}></div>
+                        <div className="skeleton-cell" style={{ width: "130px", height: "12px" }}></div>
+                      </div>
+                    </td>
+                  )}
                   <td className="col-contact" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "90px", height: "14px" }}></div></td>
                   <td className="col-email" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "150px", height: "14px" }}></div></td>
-                  <td className="col-data-collection" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "80px", height: "24px", borderRadius: "12px" }}></div></td>
+                  {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                    <td className="col-data-collection" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "80px", height: "24px", borderRadius: "12px" }}></div></td>
+                  )}
                   <td className="col-status" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "70px", height: "24px", borderRadius: "8px", margin: "auto" }}></div></td>
                   <td className="col-status" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "70px", height: "24px", borderRadius: "8px", margin: "auto" }}></div></td>
                   <td className="col-status" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "70px", height: "24px", borderRadius: "8px", margin: "auto" }}></div></td>
+                  {(ingestedFilter === "onboarded" || ingestedFilter === "called") && (
+                    <>
+                      <td className="col-status" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "70px", height: "24px", borderRadius: "8px", margin: "auto" }}></div></td>
+                      <td className="col-email" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "140px", height: "14px" }}></div></td>
+                    </>
+                  )}
+                  {ingestedFilter === "called" && (
+                    <td className="col-reason" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "120px", height: "14px" }}></div></td>
+                  )}
                   <td className="col-actions" style={{ verticalAlign: "middle" }}><div className="skeleton-cell" style={{ width: "36px", height: "36px", borderRadius: "8px" }}></div></td>
                 </tr>
               ))
             ) : filteredRows.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>
+                <td colSpan={ingestedFilter === "called" ? 11 : 10} style={{ textAlign: "center", padding: "3rem", color: "var(--text-secondary)" }}>
                   No matching job records found.
                 </td>
               </tr>
@@ -1220,12 +1263,14 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                         })()}
                       </div>
                     </td>
-                    <td className="col-meta">
-                      <div className="job-meta-cell">
-                        <span className="salary-text">{salary || "N/A"}</span>
-                        <span className="location-text">{location || "N/A"}</span>
-                      </div>
-                    </td>
+                    {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                      <td className="col-meta">
+                        <div className="job-meta-cell">
+                          <span className="salary-text">{salary || "N/A"}</span>
+                          <span className="location-text">{location || "N/A"}</span>
+                        </div>
+                      </td>
+                    )}
                     <td className="col-contact">
                       <span className="contact-phone">{contactNo || "-"}</span>
                     </td>
@@ -1249,90 +1294,92 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                         <span>-</span>
                       )}
                     </td>
-                    <td className="col-data-collection">
-                      {(() => {
-                        const isCompleted = row[cols.ingested]
-                          ? row[cols.ingested].toLowerCase() === "complete"
-                          : (
-                            !!(dummyEmail && dummyEmail.trim()) &&
-                            !!(companyName && companyName.trim()) &&
-                            !!(jobTitle && jobTitle.trim()) &&
-                            !!(row[cols.jobDescription] && row[cols.jobDescription].trim()) &&
-                            !!(location && location.trim()) &&
-                            !!(row[cols.fullPartTime] && row[cols.fullPartTime].trim()) &&
-                            !!(salary && salary.trim()) &&
-                            !!(contactNo && contactNo.trim())
-                          );
+                    {ingestedFilter !== "onboarded" && ingestedFilter !== "called" && (
+                      <td className="col-data-collection">
+                        {(() => {
+                          const isCompleted = row[cols.ingested]
+                            ? row[cols.ingested].toLowerCase() === "complete"
+                            : (
+                              !!(dummyEmail && dummyEmail.trim()) &&
+                              !!(companyName && companyName.trim()) &&
+                              !!(jobTitle && jobTitle.trim()) &&
+                              !!(row[cols.jobDescription] && row[cols.jobDescription].trim()) &&
+                              !!(location && location.trim()) &&
+                              !!(row[cols.fullPartTime] && row[cols.fullPartTime].trim()) &&
+                              !!(salary && salary.trim()) &&
+                              !!(contactNo && contactNo.trim())
+                            );
 
-                        const missingFields = [];
-                        if (!dummyEmail || !dummyEmail.trim()) missingFields.push("Dummy Email");
-                        if (!companyName || !companyName.trim()) missingFields.push("Company Name");
-                        if (!jobTitle || !jobTitle.trim()) missingFields.push("Job Title");
-                        if (!row[cols.jobDescription] || !row[cols.jobDescription].trim()) missingFields.push("Job Description");
-                        if (!location || !location.trim()) missingFields.push("Location");
-                        if (!row[cols.fullPartTime] || !row[cols.fullPartTime].trim()) missingFields.push("Full/Partime");
-                        if (!salary || !salary.trim()) missingFields.push("Salary Range");
-                        if (!contactNo || !contactNo.trim()) missingFields.push("Contact No");
+                          const missingFields = [];
+                          if (!dummyEmail || !dummyEmail.trim()) missingFields.push("Dummy Email");
+                          if (!companyName || !companyName.trim()) missingFields.push("Company Name");
+                          if (!jobTitle || !jobTitle.trim()) missingFields.push("Job Title");
+                          if (!row[cols.jobDescription] || !row[cols.jobDescription].trim()) missingFields.push("Job Description");
+                          if (!location || !location.trim()) missingFields.push("Location");
+                          if (!row[cols.fullPartTime] || !row[cols.fullPartTime].trim()) missingFields.push("Full/Partime");
+                          if (!salary || !salary.trim()) missingFields.push("Salary Range");
+                          if (!contactNo || !contactNo.trim()) missingFields.push("Contact No");
 
-                        const fieldToColLetter: Record<string, string> = {
-                          "Dummy Email": getColumnLetter(cols.dummyEmail),
-                          "Company Name": getColumnLetter(cols.companyName),
-                          "Job Title": getColumnLetter(cols.jobTitle),
-                          "Job Description": getColumnLetter(cols.jobDescription),
-                          "Location": getColumnLetter(cols.location),
-                          "Full/Partime": getColumnLetter(cols.fullPartTime),
-                          "Salary Range": getColumnLetter(cols.salaryRange),
-                          "Contact No": getColumnLetter(cols.contactNo)
-                        };
+                          const fieldToColLetter: Record<string, string> = {
+                            "Dummy Email": getColumnLetter(cols.dummyEmail),
+                            "Company Name": getColumnLetter(cols.companyName),
+                            "Job Title": getColumnLetter(cols.jobTitle),
+                            "Job Description": getColumnLetter(cols.jobDescription),
+                            "Location": getColumnLetter(cols.location),
+                            "Full/Partime": getColumnLetter(cols.fullPartTime),
+                            "Salary Range": getColumnLetter(cols.salaryRange),
+                            "Contact No": getColumnLetter(cols.contactNo)
+                          };
 
-                        return (
-                          <div className="status-ingested-cell">
-                            <span className={`status-badge-static ${isCompleted ? "status-yes" : "status-no"}`}>
-                              {isCompleted ? "Completed" : "Uncompleted"}
-                            </span>
-                            {!isCompleted && missingFields.length > 0 && (
-                              <span className="missing-fields-text">
-                                Missing:{" "}
-                                {missingFields.map((field, fIdx) => {
-                                  const colLetter = fieldToColLetter[field];
-                                  const getGid = (name: string) => {
-                                    if (!gids) return 0;
-                                    const cleanName = name.trim().toLowerCase();
-                                    const foundKey = Object.keys(gids).find(k => k.trim().toLowerCase() === cleanName);
-                                    if (foundKey) return gids[foundKey];
-                                    const values = Object.values(gids);
-                                    return values.length > 0 ? values[0] : 0;
-                                  };
-                                  const gid = getGid(sheetName);
-                                  const finalSpreadsheetId = spreadsheetId || process.env.NEXT_PUBLIC_SPREADSHEET_ID;
-                                  const url = colLetter
-                                    ? `https://docs.google.com/spreadsheets/d/${finalSpreadsheetId}/edit#gid=${gid}&range=${colLetter}${sheetRowNumber}`
-                                    : undefined;
-
-                                  return (
-                                    <React.Fragment key={field}>
-                                      {fIdx > 0 && ", "}
-                                      {url ? (
-                                        <a
-                                          href={url}
-                                          onClick={(e) => handleGoogleSheetLinkClick(e, url, `"${field}" (cell ${colLetter}${sheetRowNumber}) inside tab "${sheetName}"`)}
-                                          className="missing-field-link"
-                                          title={`Go to cell ${colLetter}${sheetRowNumber} in Google Sheets`}
-                                        >
-                                          {field}
-                                        </a>
-                                      ) : (
-                                        field
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
+                          return (
+                            <div className="status-ingested-cell">
+                              <span className={`status-badge-static ${isCompleted ? "status-yes" : "status-no"}`}>
+                                {isCompleted ? "Completed" : "Uncompleted"}
                               </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </td>
+                              {!isCompleted && missingFields.length > 0 && (
+                                <span className="missing-fields-text">
+                                  Missing:{" "}
+                                  {missingFields.map((field, fIdx) => {
+                                    const colLetter = fieldToColLetter[field];
+                                    const getGid = (name: string) => {
+                                      if (!gids) return 0;
+                                      const cleanName = name.trim().toLowerCase();
+                                      const foundKey = Object.keys(gids).find(k => k.trim().toLowerCase() === cleanName);
+                                      if (foundKey) return gids[foundKey];
+                                      const values = Object.values(gids);
+                                      return values.length > 0 ? values[0] : 0;
+                                    };
+                                    const gid = getGid(sheetName);
+                                    const finalSpreadsheetId = spreadsheetId || process.env.NEXT_PUBLIC_SPREADSHEET_ID;
+                                    const url = colLetter
+                                      ? `https://docs.google.com/spreadsheets/d/${finalSpreadsheetId}/edit#gid=${gid}&range=${colLetter}${sheetRowNumber}`
+                                      : undefined;
+
+                                    return (
+                                      <React.Fragment key={field}>
+                                        {fIdx > 0 && ", "}
+                                        {url ? (
+                                          <a
+                                            href={url}
+                                            onClick={(e) => handleGoogleSheetLinkClick(e, url, `"${field}" (cell ${colLetter}${sheetRowNumber}) inside tab "${sheetName}"`)}
+                                            className="missing-field-link"
+                                            title={`Go to cell ${colLetter}${sheetRowNumber} in Google Sheets`}
+                                          >
+                                            {field}
+                                          </a>
+                                        ) : (
+                                          field
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </td>
+                    )}
                     <td className="col-status" style={{ textAlign: "center" }}>
                       {renderStatusSelector(row[cols.called], sheetRowNumber, "called", sheetName, companyName)}
                     </td>
@@ -1342,6 +1389,40 @@ export default function SheetTable({ initialRows, sheetsList, initialSheetName, 
                     <td className="col-status" style={{ textAlign: "center" }}>
                       {renderStatusSelector(row[cols.acceptOnboard], sheetRowNumber, "accepted", sheetName)}
                     </td>
+                    {(ingestedFilter === "onboarded" || ingestedFilter === "called") && (
+                      <>
+                        <td className="col-status" style={{ textAlign: "center" }}>
+                          <span className={`status-badge-static ${row[cols.acceptOnboard]?.toLowerCase() === "yes" ? "status-yes" : row[cols.acceptOnboard]?.toLowerCase() === "no" ? "status-no" : ""}`}>
+                            {row[cols.acceptOnboard] || "-"}
+                          </span>
+                        </td>
+                        <td className="col-email">
+                          {row[cols.companyEmail] ? (
+                            <div className="email-copy-wrapper">
+                              <span className="contact-email">{row[cols.companyEmail]}</span>
+                              <button
+                                onClick={() => handleCopyEmail(row[cols.companyEmail])}
+                                className={`copy-email-btn ${copiedEmail === row[cols.companyEmail] ? "is-copied" : ""}`}
+                                title={copiedEmail === row[cols.companyEmail] ? "Copied!" : "Copy Email"}
+                              >
+                                {copiedEmail === row[cols.companyEmail] ? (
+                                  <CheckIcon className="copy-btn-icon" style={{ color: "#22c55e" }} />
+                                ) : (
+                                  <CopyIcon className="copy-btn-icon" />
+                                )}
+                              </button>
+                            </div>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </td>
+                      </>
+                    )}
+                    {ingestedFilter === "called" && (
+                      <td className="col-reason" style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                        {row[cols.reasonReject] || "-"}
+                      </td>
+                    )}
                     <td className="col-actions">
                       <div className="action-buttons-cell">
                         <button

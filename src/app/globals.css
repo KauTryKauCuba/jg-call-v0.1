@@ -691,6 +691,12 @@ p {
   width: 110px;
 }
 
+.col-reason {
+  width: 15%;
+  min-width: 150px;
+}
+
+
 /* Cells Styling */
 .job-meta-cell {
   display: flex;

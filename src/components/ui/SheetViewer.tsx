@@ -19,9 +19,10 @@ interface SheetViewerProps {
     requestCount?: number
     error?: string
   }
+  initialFilter?: string
 }
 
-export default async function SheetViewer({ listResult, dataResult }: SheetViewerProps) {
+export default async function SheetViewer({ listResult, dataResult, initialFilter }: SheetViewerProps) {
   const finalListResult = listResult || await getSpreadsheetSheets()
   const finalDataResult = dataResult || await getSheetData("All")
   
@@ -75,12 +76,14 @@ export default async function SheetViewer({ listResult, dataResult }: SheetViewe
   return (
     <div className="sheet-viewer-container">
       <SheetTable 
+        key={initialFilter || "all"}
         initialRows={initialRows} 
         sheetsList={sheetsList}
         initialSheetName={initialSheetName}
         gids={listResultVal.gids}
         initialRequestCount={dataResultVal.requestCount || 0}
         spreadsheetId={spreadsheetId}
+        initialFilter={initialFilter}
       />
     </div>
   )
